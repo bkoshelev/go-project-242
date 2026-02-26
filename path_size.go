@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 	EB = 1024 * PB
 )
 
-func GetSize(path string) (int64, error) {
+func GetSize(path string, all bool) (int64, error) {
 	fileInfo, err := os.Lstat(path)
 
 	if err != nil {
@@ -43,6 +44,10 @@ func GetSize(path string) (int64, error) {
 
 		if err != nil {
 			return 0, fmt.Errorf("directory reading error: %w", err)
+		}
+
+		if all == false && strings.HasPrefix(info.Name(), ".") {
+			continue
 		}
 
 		dirSize += info.Size()
@@ -89,8 +94,8 @@ func FormatSize(size int64, human bool) string {
 	return fmt.Sprintf("%.1fEB", ebSize)
 }
 
-func GetPathSize(path string, human bool) (string, error) {
-	size, e := GetSize(path)
+func GetPathSize(path string, human bool, all bool) (string, error) {
+	size, e := GetSize(path, all)
 
 	if e != nil {
 		return "", fmt.Errorf("GetSize error: %w", e)

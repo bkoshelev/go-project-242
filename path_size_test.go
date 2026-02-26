@@ -10,22 +10,24 @@ import (
 func TestGetSize(t *testing.T) {
 	cases := []struct {
 		path  string
+		all   bool
 		error error
 		want  int64
 	}{
-		{"./testdata/512b.txt", nil, 512},
-		{"./testdata/256k.txt", nil, 256 * KB},
-		{"./testdata/1_m.txt", nil, MB},
-		{"./testdata/unknown.txt", errors.New("test"), 0},
-		{"./testdata", nil, 512 + (256 * KB) + MB},
-		{"./testdata/empty_folder", nil, 0},
+		{"./testdata/512b.txt", false, nil, 512},
+		{"./testdata/256k.txt", false, nil, 256 * KB},
+		{"./testdata/1_m.txt", false, nil, MB},
+		{"./testdata/unknown.txt", false, errors.New("test"), 0},
+		{"./testdata", false, nil, 512 + (256 * KB) + MB},
+		{"./testdata", true, nil, 512 + (256 * KB) + MB + (1000 * KB)},
+		{"./testdata/empty_folder", false, nil, 0},
 	}
 
 	for _, c := range cases {
 		name := fmt.Sprintf("%s", c.path)
 
 		t.Run(name, func(t *testing.T) {
-			got, e := GetSize(c.path)
+			got, e := GetSize(c.path, c.all)
 			if c.error == nil && e != nil {
 				t.Errorf("Не ожидали ошибку")
 			}
@@ -33,7 +35,7 @@ func TestGetSize(t *testing.T) {
 				t.Errorf("Ожидалась ошибка")
 			}
 			if got != c.want {
-				t.Errorf("FormatSize(%s) = %v, хотели %v", c.path, got, c.want)
+				t.Errorf("FormatSize(%s, %v) = %v, хотели %v", c.path, c.all, got, c.want)
 			}
 		})
 	}
