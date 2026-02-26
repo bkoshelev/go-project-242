@@ -51,12 +51,52 @@ func GetSize(path string) (int64, error) {
 	return dirSize, nil
 }
 
-func GetPathSize(path string) (string, error) {
+func FormatSize(size int64, human bool) string {
+	if size <= 0 {
+		return "0B"
+	}
+
+	if human == false || float64(size) < KB {
+		return fmt.Sprintf("%dB", size)
+	}
+
+	if float64(size) < MB {
+		kbSize := float64(size) / KB
+		return fmt.Sprintf("%.1fKB", kbSize)
+	}
+
+	if float64(size) < GB {
+		mbSize := float64(size) / MB
+		return fmt.Sprintf("%.1fMB", mbSize)
+	}
+
+	if float64(size) < TB {
+		gbSize := float64(size) / GB
+		return fmt.Sprintf("%.1fGB", gbSize)
+	}
+
+	if float64(size) < PB {
+		tbSize := float64(size) / TB
+		return fmt.Sprintf("%.1fTB", tbSize)
+	}
+
+	if float64(size) < EB {
+		pbSize := float64(size) / PB
+		return fmt.Sprintf("%.1fPB", pbSize)
+	}
+
+	ebSize := float64(size) / EB
+	return fmt.Sprintf("%.1fEB", ebSize)
+}
+
+func GetPathSize(path string, human bool) (string, error) {
 	size, e := GetSize(path)
 
 	if e != nil {
 		return "", fmt.Errorf("GetSize error: %w", e)
 	}
 
-	return fmt.Sprintf("%d\t%s", size, path), nil
+	fmtSize := FormatSize(size, human)
+
+	return fmt.Sprintf("%s\t%s", fmtSize, path), nil
 }
