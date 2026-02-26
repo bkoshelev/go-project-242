@@ -3,6 +3,7 @@ package code
 import (
 	"errors"
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -33,6 +34,40 @@ func TestGetSize(t *testing.T) {
 			}
 			if got != c.want {
 				t.Errorf("FormatSize(%s) = %v, хотели %v", c.path, got, c.want)
+			}
+		})
+	}
+}
+
+func TestFormatSize(t *testing.T) {
+	cases := []struct {
+		size  int64
+		human bool
+		want  string
+	}{
+		{0, false, "0B"},
+		{-1, false, "0B"},
+		{2, false, "2B"},
+		{1024, false, "1024B"},
+		{0, true, "0B"},
+		{1023, true, "1023B"},
+		{KB, true, "1.0KB"},
+		{KB * 2, true, "2.0KB"},
+		{MB, true, "1.0MB"},
+		{GB, true, "1.0GB"},
+		{TB, true, "1.0TB"},
+		{PB, true, "1.0PB"},
+		{EB, true, "1.0EB"},
+		{math.MaxInt, true, "8.0EB"},
+	}
+
+	for _, c := range cases {
+		name := fmt.Sprintf("%d_%v", c.size, c.human)
+
+		t.Run(name, func(t *testing.T) {
+			got := FormatSize(c.size, c.human)
+			if got != c.want {
+				t.Errorf("FormatSize(%d, %v) = %v, хотели %v", c.size, c.human, got, c.want)
 			}
 		})
 	}
