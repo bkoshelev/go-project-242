@@ -106,7 +106,7 @@ func FormatSize(size int64, human bool) string {
 	return fmt.Sprintf("%.1fEB", ebSize)
 }
 
-func GetPathSize(path string, human bool, all bool, recursive bool) (string, error) {
+func GetPathSize(path string, recursive, human, all bool) (string, error) {
 	size, e := GetSize(path, all, recursive)
 
 	if e != nil {
@@ -115,5 +115,5 @@ func GetPathSize(path string, human bool, all bool, recursive bool) (string, err
 
 	fmtSize := FormatSize(size, human)
 
-	return fmt.Sprintf("%s\t%s", fmtSize, path), nil
+	return fmtSize, nil
 }

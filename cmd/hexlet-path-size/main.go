@@ -49,13 +49,13 @@ func main() {
 				return nil
 			}
 
-			result, err := code.GetPathSize(path, cmd.Bool("human"), cmd.Bool("all"), cmd.Bool("recursive"))
+			result, err := code.GetPathSize(path, cmd.Bool("recursive"), cmd.Bool("human"), cmd.Bool("all"))
 
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			fmt.Println(result)
+			fmt.Printf("%s\t%s", result, path)
 
 			return nil
 		},
