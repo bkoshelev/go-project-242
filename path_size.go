@@ -24,7 +24,7 @@ func GetSize(path string, all bool, recursive bool) (int64, error) {
 		return 0, errors.New("path does not exist")
 	}
 
-	if fileInfo.IsDir() == false {
+	if !fileInfo.IsDir() {
 		return fileInfo.Size(), nil
 	}
 
@@ -37,7 +37,7 @@ func GetSize(path string, all bool, recursive bool) (int64, error) {
 	var dirSize int64
 
 	for _, entry := range dirEntries {
-		if entry.IsDir() && recursive == false {
+		if entry.IsDir() && !recursive {
 			continue
 		}
 
@@ -56,7 +56,7 @@ func GetSize(path string, all bool, recursive bool) (int64, error) {
 				return 0, fmt.Errorf("directory reading error: %w", err)
 			}
 
-			if all == false && strings.HasPrefix(info.Name(), ".") {
+			if !all && strings.HasPrefix(info.Name(), ".") {
 				continue
 			}
 
@@ -73,7 +73,7 @@ func FormatSize(size int64, human bool) string {
 		return "0B"
 	}
 
-	if human == false || float64(size) < KB {
+	if !human || float64(size) < KB {
 		return fmt.Sprintf("%dB", size)
 	}
 

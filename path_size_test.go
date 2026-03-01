@@ -37,7 +37,7 @@ func TestGetSize(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		name := fmt.Sprintf("%s", c.path)
+		name := fmt.Sprintf("%s_%v_%v", c.path, c.all, c.recursive)
 
 		t.Run(name, func(t *testing.T) {
 			got, e := GetSize(c.path, c.all, c.recursive)
