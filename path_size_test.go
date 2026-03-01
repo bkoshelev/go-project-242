@@ -7,35 +7,48 @@ import (
 	"testing"
 )
 
+const (
+	B_512                       = 512
+	KB_256                      = 256 * KB
+	KB_1000                     = 1000 * KB
+	TEST_DATA_SIZE              = B_512 + KB_256 + MB
+	TEST_DATA_SIZE_ALL          = B_512 + KB_256 + MB + KB_1000
+	INTERNAL_TEST_DATA_SIZE     = KB_256
+	INTERNAL_TEST_DATA_SIZE_ALL = KB_256 + KB_1000
+)
+
 func TestGetSize(t *testing.T) {
 	cases := []struct {
-		path  string
-		all   bool
-		error error
-		want  int64
+		path      string
+		all       bool
+		recursive bool
+		error     error
+		want      int64
 	}{
-		{"./testdata/512b.txt", false, nil, 512},
-		{"./testdata/256k.txt", false, nil, 256 * KB},
-		{"./testdata/1_m.txt", false, nil, MB},
-		{"./testdata/unknown.txt", false, errors.New("test"), 0},
-		{"./testdata", false, nil, 512 + (256 * KB) + MB},
-		{"./testdata", true, nil, 512 + (256 * KB) + MB + (1000 * KB)},
-		{"./testdata/empty_folder", false, nil, 0},
+		{"./testdata/512b.txt", false, false, nil, B_512},
+		{"./testdata/256k.txt", false, false, nil, KB_256},
+		{"./testdata/1_m.txt", false, false, nil, MB},
+		{"./testdata/unknown.txt", false, false, errors.New("test"), 0},
+		{"./testdata", false, false, nil, TEST_DATA_SIZE},
+		{"./testdata", true, false, nil, TEST_DATA_SIZE_ALL},
+		{"./testdata/empty_folder", false, false, nil, 0},
+		{"./testdata", false, true, nil, TEST_DATA_SIZE + INTERNAL_TEST_DATA_SIZE},
+		{"./testdata", true, true, nil, TEST_DATA_SIZE_ALL + INTERNAL_TEST_DATA_SIZE_ALL},
 	}
 
 	for _, c := range cases {
 		name := fmt.Sprintf("%s", c.path)
 
 		t.Run(name, func(t *testing.T) {
-			got, e := GetSize(c.path, c.all)
+			got, e := GetSize(c.path, c.all, c.recursive)
 			if c.error == nil && e != nil {
-				t.Errorf("Не ожидали ошибку")
+				t.Errorf("Не ожидали ошибку %q", c.error)
 			}
 			if c.error != nil && e == nil {
 				t.Errorf("Ожидалась ошибка")
 			}
 			if got != c.want {
-				t.Errorf("FormatSize(%s, %v) = %v, хотели %v", c.path, c.all, got, c.want)
+				t.Errorf("FormatSize(%s, %v, %v) = %v, хотели %v", c.path, c.all, c.recursive, got, c.want)
 			}
 		})
 	}
