@@ -12,9 +12,8 @@ import (
 
 func main() {
 	cmd := &cli.Command{
-		Name:      "hexlet-path-size",
-		Usage:     "print size of a file or directory",
-		ArgsUsage: "<path> - path to file or directory",
+		Name:  "hexlet-path-size",
+		Usage: "print size of a file or directory; supports -r (recursive), -H (human-readable), -a (include hidden)",
 		Arguments: []cli.Argument{
 			&cli.StringArg{
 				Name:      "path",
@@ -35,6 +34,12 @@ func main() {
 				Value:   false,
 				Usage:   "include hidden files and directories",
 			},
+			&cli.BoolFlag{
+				Name:    "recursive",
+				Aliases: []string{"r"},
+				Value:   false,
+				Usage:   "recursive size of directories",
+			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			path := cmd.StringArg("path")
@@ -44,7 +49,7 @@ func main() {
 				return nil
 			}
 
-			result, err := code.GetPathSize(path, cmd.Bool("human"), cmd.Bool("all"))
+			result, err := code.GetPathSize(path, cmd.Bool("human"), cmd.Bool("all"), cmd.Bool("recursive"))
 
 			if err != nil {
 				log.Fatal(err)

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ const (
 	EB = 1024 * PB
 )
 
-func GetSize(path string, all bool) (int64, error) {
+func GetSize(path string, all bool, recursive bool) (int64, error) {
 	fileInfo, err := os.Lstat(path)
 
 	if err != nil {
@@ -36,21 +37,32 @@ func GetSize(path string, all bool) (int64, error) {
 	var dirSize int64
 
 	for _, entry := range dirEntries {
-		if entry.IsDir() == true {
+		if entry.IsDir() && recursive == false {
 			continue
 		}
 
-		info, err := entry.Info()
+		if entry.IsDir() && recursive {
+			internalDirSize, err := GetSize(filepath.Join(path, entry.Name()), all, recursive)
 
-		if err != nil {
-			return 0, fmt.Errorf("directory reading error: %w", err)
+			if err != nil {
+				return 0, errors.New("directory reading error")
+			}
+
+			dirSize += internalDirSize
+		} else {
+			info, err := entry.Info()
+
+			if err != nil {
+				return 0, fmt.Errorf("directory reading error: %w", err)
+			}
+
+			if all == false && strings.HasPrefix(info.Name(), ".") {
+				continue
+			}
+
+			dirSize += info.Size()
 		}
 
-		if all == false && strings.HasPrefix(info.Name(), ".") {
-			continue
-		}
-
-		dirSize += info.Size()
 	}
 
 	return dirSize, nil
@@ -94,8 +106,8 @@ func FormatSize(size int64, human bool) string {
 	return fmt.Sprintf("%.1fEB", ebSize)
 }
 
-func GetPathSize(path string, human bool, all bool) (string, error) {
-	size, e := GetSize(path, all)
+func GetPathSize(path string, human bool, all bool, recursive bool) (string, error) {
+	size, e := GetSize(path, all, recursive)
 
 	if e != nil {
 		return "", fmt.Errorf("GetSize error: %w", e)
